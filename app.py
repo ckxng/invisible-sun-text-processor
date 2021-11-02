@@ -91,7 +91,6 @@ def parse_04_incantations(filename):
         'Level': re.compile('^Level: (?P<content>.+)$'),
         'Form': re.compile('^Form: (?P<content>.+)$'),
         'Color': re.compile('^Color: (?P<content>.+)$'),
-        'Facet': re.compile('^Facets?: (?P<content>.+)$'),
         'Depletion': re.compile('^Depletion: (?P<content>.+)$')
     }
 
