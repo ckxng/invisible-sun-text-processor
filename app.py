@@ -172,6 +172,92 @@ def parse_05_objects_of_power(filename):
 
     return data
 
+def parse_06_spells(filename):
+    """
+    Parse the spells text file provided by MCG
+    :param str filename: the filename of the text file
+    :return: dict of dicts containing parsed data
+    """
+    found_file_start = 0
+
+    current_title = None
+    re_title = re.compile('^(?P<title>.+) \\(SPELL\\)$')
+
+    current_section = None
+    re_sections = {
+        'Level': re.compile('^Level: (?P<content>.+)$'),
+        'Form': re.compile('^Form: (?P<content>.+)$'),
+        'Color': re.compile('^Color: (?P<content>.+)$'),
+        'Facet': re.compile('^Facets?: (?P<content>.+)$'),
+        'Depletion': re.compile('^Depletion: (?P<content>.+)$')
+    }
+
+    data = {}
+
+    for line in open(filename, "r").readlines():
+        line = line.rstrip()
+
+        # Check if this is the correct file, otherwise don't parse
+        if line == "SPELLS":
+            found_file_start = 1
+            current_title = None
+            current_section = None
+        if not found_file_start:
+            continue
+
+        # The current entry is done and we are between entries, stop parsing
+        if line == '':
+            current_title = None
+            current_section = None
+            continue
+
+        # If we are between entries
+        if not current_title:
+            m = re_title.match(line)
+            # We found a title, stop parsing
+            if m:
+                current_title = m.group('title')
+                data[current_title] = {
+                    'Title': current_title
+                }
+                continue
+            # We have not found a title yet, stop parsing
+            else:
+                continue
+
+        found_start_of_new_section = 0
+        for section in re_sections.keys():
+            m = re_sections[section].match(line)
+            # We found the beginning of a new section
+            if m:
+                current_section = section
+                data[current_title][current_section] = m.group('content')
+                found_start_of_new_section = 1
+        # End parsing upon handling the first line of a section
+        if found_start_of_new_section:
+            # Levels are always single-line, but are always followed by Effect
+            if current_section == 'Level':
+                current_section = 'Effect'
+                data[current_title][current_section] = ''
+            # Colors are always single-line, but are sometimes followed by comments
+            elif current_section == 'Color':
+                current_section = 'Comment'
+                data[current_title][current_section] = ''
+            continue
+
+        # Something is wrong if we are not in the middle of parsing a multiline section, skip
+        if not current_section:
+            print('Unexpected condition, not in a recognized part of the file')
+            continue
+
+        # We are in a multiline section, append the line to the current section
+        if data[current_title][current_section] == '':
+            data[current_title][current_section] += line
+        else:
+            data[current_title][current_section] += ' ' + line
+
+    return data
+
 def parse_07_ephemera(filename):
     """
     Parse the ephemera text file provided by MCG
@@ -265,6 +351,11 @@ if __name__ == "__main__":
     save_tsv(data, "output/tsv/05-objects-of-power.tsv")
     open('output/json/05-objects-of-power.json', 'w').write(json.dumps(data))
     open('output/yaml/05-objects-of-power.yaml', 'w').write(yaml.dump(data))
+
+    data = parse_06_spells("textreference/06-spells.txt")
+    save_tsv(data, "output/tsv/06-spells.tsv")
+    open('output/json/06-spells.json', 'w').write(json.dumps(data))
+    open('output/yaml/06-spells.yaml', 'w').write(yaml.dump(data))
 
     data = parse_07_ephemera("textreference/07-epherma.txt")
     save_tsv(data, "output/tsv/07-ephemera.tsv")
