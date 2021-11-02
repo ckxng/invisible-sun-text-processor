@@ -108,6 +108,7 @@ def parse_07_ephemera(filename):
                 current_section = section
                 data[current_title][current_section] = m.group('content').rstrip()
                 found_start_of_new_section = 1
+                continue
         # End parsing upon handling the first line of a section
         if found_start_of_new_section:
             # Colors are always single-line, but are sometimes followed by comments
