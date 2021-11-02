@@ -50,18 +50,40 @@ def save_tsv(data, filename):
     f.close()
 
 
+def parse_02_cantrips(filename):
+    """
+    Parse the cantrips text file provided by MCG
+    :param str filename: the filename of the text file
+    :return: dict of dicts containing parsed data
+    """
+    re_cantrip = re.compile('^(?P<title>.+) \\((?P<type>[A-Z]+)\\): (?P<form>.+)$')
+
+    data = {}
+
+    for line in open(filename, "r").readlines():
+        line.rstrip()
+
+        m = re_cantrip.match(line)
+        # Found a cantrip
+        if m:
+            data[m.group('title')] = {
+                'Title': m.group('title'),
+                'Type': m.group('type'),
+                'Form': m.group('form')
+            }
+
+    return data
+
 def parse_07_ephemera(filename):
     """
     Parse the ephemera text file provided by MCG
     :param str filename: the filename of the text file
     :return: dict of dicts containing parsed data
     """
-    text = open(filename, "r").readlines()
-
     found_file_start = 0
 
     current_title = None
-    re_title = re.compile('^(?P<title>.+) \(EPHEMERA OBJECT\)$')
+    re_title = re.compile('^(?P<title>.+) \\(EPHEMERA OBJECT\\)$')
 
     current_section = None
     re_sections = {
@@ -73,7 +95,7 @@ def parse_07_ephemera(filename):
 
     data = {}
 
-    for line in text:
+    for line in open(filename, "r").readlines():
         line.rstrip()
 
         # Check if this is the correct file, otherwise don't parse
@@ -95,7 +117,7 @@ def parse_07_ephemera(filename):
             m = re_title.match(line)
             # We found a title, stop parsing
             if m:
-                current_title = m.group('title').rstrip()
+                current_title = m.group('title')
                 data[current_title] = {
                     'Title': current_title
                 }
@@ -110,7 +132,7 @@ def parse_07_ephemera(filename):
             # We found the beginning of a new section
             if m:
                 current_section = section
-                data[current_title][current_section] = m.group('content').rstrip()
+                data[current_title][current_section] = m.group('content')
                 found_start_of_new_section = 1
         # End parsing upon handling the first line of a section
         if found_start_of_new_section:
@@ -126,13 +148,19 @@ def parse_07_ephemera(filename):
             continue
 
         # We are in a multiline section, append the line to the current section
-        data[current_title][current_section] += ' ' + line.rstrip()
+        data[current_title][current_section] += ' ' + line
 
     return data
 
 
 if __name__ == "__main__":
-    ephemera = parse_07_ephemera("textreference/07-epherma.txt")
-    save_tsv(ephemera, "output/tsv/07-ephemera.tsv")
-    open('output/json/07-ephemera.json', 'w').write(json.dumps(ephemera))
-    open('output/yaml/07-ephemera.yaml', 'w').write(yaml.dump(ephemera))
+
+    data = parse_02_cantrips("textreference/02-cantrips.txt")
+    save_tsv(data, "output/tsv/02-cantrips.tsv")
+    open('output/json/02-cantrips.json', 'w').write(json.dumps(data))
+    open('output/yaml/02-cantrips.yaml', 'w').write(yaml.dump(data))
+
+    data = parse_07_ephemera("textreference/07-epherma.txt")
+    save_tsv(data, "output/tsv/07-ephemera.tsv")
+    open('output/json/07-ephemera.json', 'w').write(json.dumps(data))
+    open('output/yaml/07-ephemera.yaml', 'w').write(yaml.dump(data))

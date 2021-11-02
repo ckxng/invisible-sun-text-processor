@@ -6,6 +6,10 @@ Place your text reference files in the _textreference_ directory
 
 ## Corrections
 
+### 02-cantrips.txt
+### SIGN AGAINST UNWANTED INFLUENCE
+There is an extra break in the line.  Remove the line break so that this entry is contained on a single line.
+
 ### 07-ephemera.txt
 #### ANANYM
 There is an extra blank line after the title of ANANYM.  Remove this blank line.
