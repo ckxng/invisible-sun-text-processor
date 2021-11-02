@@ -20,8 +20,12 @@ def save_tsv(data, filename):
     }
 
     The output will be:
+    key1\tkey2\tkey3
     value1a\tvalue1b\tvalue1c
     value2a\tvalue2b\tvalue2c
+
+    :param dict data: a dict of dict of data to write
+    :param str filename: the filename to write to
     """
     f = open(filename, 'w')
     data_keys = {}
@@ -42,8 +46,13 @@ def save_tsv(data, filename):
         f.write("\t".join(vals)+"\n")
     f.close()
 
-def parse_07_ephemera():
-    text = open("textreference/07-epherma.txt", "r").readlines()
+def parse_07_ephemera(filename):
+    """
+    Parse the ephemera text file provided by MCG
+    :param str filename: the filename of the text file
+    :return: dict of dicts containing parsed data
+    """
+    text = open(filename, "r").readlines()
 
     found_file_start = 0
 
@@ -119,5 +128,5 @@ def parse_07_ephemera():
 
 
 if __name__ == "__main__":
-    ephemera = parse_07_ephemera()
+    ephemera = parse_07_ephemera("textreference/07-epherma.txt")
     save_tsv(ephemera, "output/tsv/07-ephemera.tsv")
