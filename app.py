@@ -75,6 +75,92 @@ def parse_02_cantrips(filename):
     return data
 
 
+def parse_04_incantations(filename):
+    """
+    Parse the incantations text file provided by MCG
+    :param str filename: the filename of the text file
+    :return: dict of dicts containing parsed data
+    """
+    found_file_start = 0
+
+    current_title = None
+    re_title = re.compile('^(?P<title>.+) \\(INCANTATION\\)$')
+
+    current_section = None
+    re_sections = {
+        'Level': re.compile('^Level: (?P<content>.+)$'),
+        'Form': re.compile('^Form: (?P<content>.+)$'),
+        'Color': re.compile('^Color: (?P<content>.+)$'),
+        'Facet': re.compile('^Facets?: (?P<content>.+)$'),
+        'Depletion': re.compile('^Depletion: (?P<content>.+)$')
+    }
+
+    data = {}
+
+    for line in open(filename, "r").readlines():
+        line = line.rstrip()
+
+        # Check if this is the correct file, otherwise don't parse
+        if line == "INCANTATIONS":
+            found_file_start = 1
+            current_title = None
+            current_section = None
+        if not found_file_start:
+            continue
+
+        # The current entry is done and we are between entries, stop parsing
+        if line == '':
+            current_title = None
+            current_section = None
+            continue
+
+        # If we are between entries
+        if not current_title:
+            m = re_title.match(line)
+            # We found a title, stop parsing
+            if m:
+                current_title = m.group('title')
+                data[current_title] = {
+                    'Title': current_title
+                }
+                continue
+            # We have not found a title yet, stop parsing
+            else:
+                continue
+
+        found_start_of_new_section = 0
+        for section in re_sections.keys():
+            m = re_sections[section].match(line)
+            # We found the beginning of a new section
+            if m:
+                current_section = section
+                data[current_title][current_section] = m.group('content')
+                found_start_of_new_section = 1
+        # End parsing upon handling the first line of a section
+        if found_start_of_new_section:
+            # Levels are always single-line, but are always followed by Effect
+            if current_section == 'Level':
+                current_section = 'Effect'
+                data[current_title][current_section] = ''
+            # Colors are always single-line, but are sometimes followed by comments
+            elif current_section == 'Color':
+                current_section = 'Comment'
+                data[current_title][current_section] = ''
+            continue
+
+        # Something is wrong if we are not in the middle of parsing a multiline section, skip
+        if not current_section:
+            print('Unexpected condition, not in a recognized part of the file')
+            continue
+
+        # We are in a multiline section, append the line to the current section
+        if data[current_title][current_section] == '':
+            data[current_title][current_section] += line
+        else:
+            data[current_title][current_section] += ' ' + line
+
+    return data
+
 
 def parse_05_objects_of_power(filename):
     """
@@ -168,7 +254,8 @@ def parse_05_objects_of_power(filename):
         # If we are in the form section and this line begins with a capital letter
         # and the previous line does not end with a period
         # We have moved from form to effect
-        if current_section == 'Form' and re_begins_with_capital.match(line) and not re_ends_with_period.search(previous_line):
+        if current_section == 'Form' and re_begins_with_capital.match(line) and not re_ends_with_period.search(
+                previous_line):
             current_section = 'Effect'
             data[current_title][current_section] = ''
 
@@ -189,6 +276,7 @@ def parse_05_objects_of_power(filename):
         previous_line = line
 
     return data
+
 
 def parse_06_spells(filename):
     """
@@ -276,6 +364,7 @@ def parse_06_spells(filename):
 
     return data
 
+
 def parse_07_ephemera(filename):
     """
     Parse the ephemera text file provided by MCG
@@ -360,7 +449,8 @@ def parse_07_ephemera(filename):
         # If we are in the form section and this line begins with a capital letter
         # and the previous line does not end with a period
         # We have moved from form to effect
-        if current_section == 'Form' and re_begins_with_capital.match(line) and not re_ends_with_period.search(previous_line):
+        if current_section == 'Form' and re_begins_with_capital.match(line) and not re_ends_with_period.search(
+                previous_line):
             current_section = 'Effect'
             data[current_title][current_section] = ''
 
@@ -377,11 +467,15 @@ def parse_07_ephemera(filename):
 
 
 if __name__ == "__main__":
-
     data = parse_02_cantrips("textreference/02-cantrips.txt")
     save_tsv(data, "output/tsv/02-cantrips.tsv")
     open('output/json/02-cantrips.json', 'w').write(json.dumps(data))
     open('output/yaml/02-cantrips.yaml', 'w').write(yaml.dump(data))
+
+    data = parse_04_incantations("textreference/04-incantations.txt")
+    save_tsv(data, "output/tsv/04-incantations.tsv")
+    open('output/json/04-incantations.json', 'w').write(json.dumps(data))
+    open('output/yaml/04-incantations.yaml', 'w').write(yaml.dump(data))
 
     data = parse_05_objects_of_power("textreference/05-objects-of-power.txt")
     save_tsv(data, "output/tsv/05-objects-of-power.tsv")
