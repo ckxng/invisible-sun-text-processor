@@ -100,6 +100,11 @@ def parse_05_objects_of_power(filename):
 
     data = {}
 
+    # Needed for determining the end of a form
+    previous_line = None
+    re_begins_with_capital = re.compile('^[A-Z]')
+    re_ends_with_period = re.compile('\\.$')
+
     for line in open(filename, "r").readlines():
         line = line.rstrip()
 
@@ -150,6 +155,9 @@ def parse_05_objects_of_power(filename):
             if current_section == 'Color':
                 current_section = 'Comment'
                 data[current_title][current_section] = ''
+
+            # Save this line as the previous line when finding a new section
+            previous_line = line
             continue
 
         # Something is wrong if we are not in the middle of parsing a multiline section, skip
@@ -157,9 +165,16 @@ def parse_05_objects_of_power(filename):
             print('Unexpected condition, not in a recognized part of the file')
             continue
 
+        # If we are in the form section and this line begins with a capital letter
+        # and the previous line does not end with a period
+        # We have moved from form to effect
+        if current_section == 'Form' and re_begins_with_capital.match(line) and not re_ends_with_period.search(previous_line):
+            current_section = 'Effect'
+            data[current_title][current_section] = ''
+
         # If we are in the price section and the line does not mention money,
         # then we have actually switched to a comment
-        if current_section == 'Price':
+        elif current_section == 'Price':
             if not re_money.search(line):
                 current_section = 'Comment'
                 data[current_title][current_section] = ''
@@ -169,6 +184,9 @@ def parse_05_objects_of_power(filename):
             data[current_title][current_section] += line
         else:
             data[current_title][current_section] += ' ' + line
+
+        # Save this line as the previous line after handling multiline text
+        previous_line = line
 
     return data
 
@@ -279,6 +297,11 @@ def parse_07_ephemera(filename):
 
     data = {}
 
+    # Needed for determining the end of a form
+    previous_line = None
+    re_begins_with_capital = re.compile('^[A-Z]')
+    re_ends_with_period = re.compile('\\.$')
+
     for line in open(filename, "r").readlines():
         line = line.rstrip()
 
@@ -324,6 +347,9 @@ def parse_07_ephemera(filename):
             if current_section == 'Color':
                 current_section = 'Comment'
                 data[current_title][current_section] = ''
+
+            # Save this line as the previous line when finding a new section
+            previous_line = line
             continue
 
         # Something is wrong if we are not in the middle of parsing a multiline section, skip
@@ -331,11 +357,21 @@ def parse_07_ephemera(filename):
             print('Unexpected condition, not in a recognized part of the file')
             continue
 
+        # If we are in the form section and this line begins with a capital letter
+        # and the previous line does not end with a period
+        # We have moved from form to effect
+        if current_section == 'Form' and re_begins_with_capital.match(line) and not re_ends_with_period.search(previous_line):
+            current_section = 'Effect'
+            data[current_title][current_section] = ''
+
         # We are in a multiline section, append the line to the current section
         if data[current_title][current_section] == '':
             data[current_title][current_section] += line
         else:
             data[current_title][current_section] += ' ' + line
+
+        # Save this line as the previous line after handling multiline text
+        previous_line = line
 
     return data
 
