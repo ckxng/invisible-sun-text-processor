@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 import re
+import json
+import yaml
+
 
 def save_tsv(data, filename):
     """
@@ -34,7 +37,7 @@ def save_tsv(data, filename):
             data_keys[kk] = 1
     ordered_keys = data_keys.keys()
 
-    f.write("\t".join(ordered_keys)+"\n")
+    f.write("\t".join(ordered_keys) + "\n")
 
     for k in data.keys():
         vals = []
@@ -43,8 +46,9 @@ def save_tsv(data, filename):
                 vals.append(data[k][ok])
             else:
                 vals.append('')
-        f.write("\t".join(vals)+"\n")
+        f.write("\t".join(vals) + "\n")
     f.close()
+
 
 def parse_07_ephemera(filename):
     """
@@ -108,7 +112,6 @@ def parse_07_ephemera(filename):
                 current_section = section
                 data[current_title][current_section] = m.group('content').rstrip()
                 found_start_of_new_section = 1
-                continue
         # End parsing upon handling the first line of a section
         if found_start_of_new_section:
             # Colors are always single-line, but are sometimes followed by comments
@@ -131,3 +134,5 @@ def parse_07_ephemera(filename):
 if __name__ == "__main__":
     ephemera = parse_07_ephemera("textreference/07-epherma.txt")
     save_tsv(ephemera, "output/tsv/07-ephemera.tsv")
+    open('output/json/07-ephemera.json', 'w').write(json.dumps(ephemera))
+    open('output/yaml/07-ephemera.yaml', 'w').write(yaml.dump(ephemera))

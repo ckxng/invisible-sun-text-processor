@@ -1,4 +1,7 @@
 textreference/*.txt
+output/tsv/*.tsv
+output/yaml/*.yaml
+output/json/*.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
