@@ -1,4 +1,3 @@
-
 def save_tsv(data, filename):
     """
     Saves a data dict as a file in Tab Separated Value form.

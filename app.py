@@ -1,35 +1,26 @@
 #!/usr/bin/env python -m
 import json
-import yaml
-from src.savelib import save_tsv
-import src.isparser
 
-sources = [
-    {
-        "filebase": '02-cantrips',
-        "type": 'cantrips'
-    },
-    {
-        "filebase": '04-incantations',
-        "type": 'incantations'
-    },
-    {
-        "filebase": '05-objects-of-power',
-        "type": 'objects-of-power'
-    },
-    {
-        "filebase": '06-spells',
-        "type": 'spells'
-    },
-    {
-        "filebase": '07-epherma',
-        "type": 'epherma'
-    }
+import yaml
+
+import src.isparser
+from src.savelib import save_tsv
+
+files = [
+    'textreference/02-cantrips.txt',
+    'textreference/04-incantations.txt',
+    'textreference/05-objects-of-power.txt',
+    'textreference/06-spells.txt',
+    'textreference/07-epherma.txt'
 ]
 
 if __name__ == "__main__":
-    for src in sources:
-        data = src.isparser.parse("textreference/%s.txt" % src['filebase'], src['type'])
-        save_tsv(data, "output/tsv/%s.tsv" % src['filebase'])
-        open('output/json/%s.json' % src['filebase'], 'w').write(json.dumps(data))
-        open('output/yaml/%s.yaml' % src['filebase'], 'w').write(yaml.dump(data))
+    data = src.isparser.parse_all(files)
+    open('output/all-data.json', 'w').write(json.dumps(data))
+    open('output/all-data.yaml', 'w').write(yaml.dump(data))
+
+    for filetype in data.keys():
+        filename = filetype.lower().replace(' ', '-')
+        save_tsv(data[filetype], "output/%s.tsv" % filename)
+        open('output/%s.json' % filename, 'w').write(json.dumps(data[filetype]))
+        open('output/%s.yaml' % filename, 'w').write(yaml.dump(data[filetype]))
