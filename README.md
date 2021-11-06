@@ -9,7 +9,7 @@ Place your text reference files in the _textreference_ directory
 
 ### 02-cantrips.txt
 
-### SIGN AGAINST UNWANTED INFLUENCE
+#### SIGN AGAINST UNWANTED INFLUENCE
 
 There is an extra break in the line. Remove the line break so that this entry is contained on a single line.
 
