@@ -120,7 +120,9 @@ def parse_any(filename):
         'Spells': {},
         'Incantations': {},
         'Objects of Power': {},
-        'Monographs': {}
+        'Monographs': {},
+        'Character Secrets': {},
+        'House Secrets': {}
     }
 
     filetype = None
@@ -189,7 +191,7 @@ def parse_any(filename):
             # Incantations or Spells: Level.
             # Levels are always single line and are always followed by an effect which
             # does not have a section label
-            if (filetype == 'Spells' or filetype == 'Incantations') and section == 'Level':
+            if filetype in ('Spells', 'Incantations', 'Character Secrets', 'House Secrets') and section == 'Level':
                 section = 'Effect'
                 data[filetype][title][section] = ''
 
@@ -258,6 +260,10 @@ def check_for_filetype(line):
         return 'Spells'
     elif line == 'MONOGRAPHS':
         return 'Monographs'
+    elif line == 'CHARACTER SECRETS':
+        return 'Character Secrets'
+    elif line == 'HOUSE SECRETS':
+        return 'House Secrets'
     return None
 
 
@@ -269,7 +275,7 @@ def check_for_title(line):
     """
 
     re_title = re.compile(
-        '^(?P<title>.+) \\((?P<type>EPHEMERA OBJECT|SPELL|INCANTATION|OBJECT OF POWER|CONJURATION|INVOCATION|ENCHANTMENT|RITUAL)\\)$')
+        '^(?P<title>.+) \\((?P<type>EPHEMERA OBJECT|SPELL|INCANTATION|OBJECT OF POWER|CONJURATION|INVOCATION|ENCHANTMENT|RITUAL|CHARACTER SECRETS|HOUSE SECRETS)\\)$')
     m = re_title.match(line)
     if m:
         return m.group('title'), m.group('type')

@@ -12,7 +12,9 @@ files = [
     'textreference/04-incantations.txt',
     'textreference/05-objects-of-power.txt',
     'textreference/06-spells.txt',
-    'textreference/07-epherma.txt'
+    'textreference/07-epherma.txt',
+    'textreference/18-character-secrets.txt',
+    'textreference/19-house-secrets.txt'
 ]
 
 if __name__ == "__main__":

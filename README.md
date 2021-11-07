@@ -41,3 +41,7 @@ To:
     the sun next sets
 
 This will allow the text to parse correctly.
+
+### 19-house-secrets.txt
+#### ALARM
+There should be a newline before ALARM, separating it from ADVANCED HOUSE
