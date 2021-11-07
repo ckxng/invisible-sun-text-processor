@@ -3,7 +3,7 @@ import json
 
 import yaml
 
-import src.isparser
+from src.isparser import parse_all
 from src.savelib import save_tsv
 
 files = [
@@ -19,7 +19,7 @@ files = [
 ]
 
 if __name__ == "__main__":
-    data = src.isparser.parse_all(files)
+    data = parse_all(files)
     open('output/all-data.json', 'w').write(json.dumps(data))
     open('output/all-data.yaml', 'w').write(yaml.dump(data))
 
