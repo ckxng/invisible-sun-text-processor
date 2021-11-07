@@ -49,7 +49,8 @@ def check_for_section(line):
         'Depletion': re.compile('^Depletion: (?P<content>.+)$'),
         'Price': re.compile('^(Conventional )?Price:( (?P<content>.+))?'),
         'Effect Depletion': re.compile('^Effect Depletion:( (?P<content>.+))?'),
-        'Object Depletion': re.compile('^Object Depletion:( (?P<content>.+))?')
+        'Object Depletion': re.compile('^Object Depletion:( (?P<content>.+))?'),
+        'Requirements': re.compile('^Requirements:( (?P<content>.+))?')
     }
 
     for section in re_sections.keys():
@@ -90,6 +91,20 @@ def check_money_words(line):
     return False
 
 
+def check_requirement(line):
+    """
+    Check this line for a requirement, which is indicated by a line betinning with "?? ".
+    If one is found, return that line with a newline at the end, as requirements are always
+    a complete line and formatted as a bulleted list.  Replace the "??" with a "-" as well
+    so that the resulting list can later be Markdown formatted.
+    :param line: the line to check
+    :return: None or a formatted requirement
+    """
+    if line[0:3] == "?? ":
+        return "- %s\n" % line[3:]
+    return None
+
+
 def parse_any(filename):
     """
     Parse any sources from the specified file.
@@ -104,7 +119,8 @@ def parse_any(filename):
         'Ephemera': {},
         'Spells': {},
         'Incantations': {},
-        'Objects of Power': {}
+        'Objects of Power': {},
+        'Monographs': {}
     }
 
     filetype = None
@@ -146,9 +162,12 @@ def parse_any(filename):
         # we are between titles, check this line for a title and create an entry for it
         # whether this line contains a title or not, move on to the next entry
         if not title:
-            title = check_for_title(line)
+            (title, entrytype) = check_for_title(line)
             if title:
-                data[filetype][title] = {'Title': title}
+                data[filetype][title] = {
+                    'Title': title,
+                    'Type': entrytype
+                }
             continue
 
         # Objects of Power have special tags applied to certain items.
@@ -182,6 +201,20 @@ def parse_any(filename):
                 data[filetype][title][section] = ''
 
             continue
+
+        # Monographs: Requirements.
+        # If we are parsing a requirements section and do not find a specially formatted requirement
+        # entry, then we have moved on to the Effects section.
+        # If we find one, append it to the requirements and we are done with this line.
+        # Otherwise, we are now entering the Effect section
+        elif filetype == 'Monographs' and section == 'Requirements':
+            new_requirement = check_requirement(line)
+            if new_requirement:
+                data[filetype][title][section] += new_requirement
+                continue
+            else:
+                section = 'Effect'
+                data[filetype][title][section] = ''
 
         # under certain conditions, we need to use the previous line to detect a
         # change in section
@@ -223,6 +256,8 @@ def check_for_filetype(line):
         return 'Objects of Power'
     elif line == 'SPELLS':
         return 'Spells'
+    elif line == 'MONOGRAPHS':
+        return 'Monographs'
     return None
 
 
@@ -230,14 +265,15 @@ def check_for_title(line):
     """
     Check the current line for whether it reveals the title of a new entry.
     :param srtr line: the line to check
-    :return: None or the title of the next entry
+    :return: tuple (the entry title, the entry type) or (None, None)
     """
 
-    re_title = re.compile('^(?P<title>.+) \\((EPHEMERA OBJECT|SPELL|INCANTATION|OBJECT OF POWER)\\)$')
+    re_title = re.compile(
+        '^(?P<title>.+) \\((?P<type>EPHEMERA OBJECT|SPELL|INCANTATION|OBJECT OF POWER|CONJURATION|INVOCATION|ENCHANTMENT|RITUAL)\\)$')
     m = re_title.match(line)
     if m:
-        return m.group('title')
-    return None
+        return m.group('title'), m.group('type')
+    return None, None
 
 
 def parse_cantrip_line(line):

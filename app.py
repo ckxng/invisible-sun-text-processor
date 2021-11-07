@@ -8,6 +8,7 @@ from src.savelib import save_tsv
 
 files = [
     'textreference/02-cantrips.txt',
+    'textreference/03-monographs.txt',
     'textreference/04-incantations.txt',
     'textreference/05-objects-of-power.txt',
     'textreference/06-spells.txt',
