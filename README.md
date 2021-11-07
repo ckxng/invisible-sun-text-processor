@@ -42,6 +42,14 @@ To:
 
 This will allow the text to parse correctly.
 
+### 10-forte.txt
+#### AETHYR BREATH
+There is a missing : after the Level.  Change it to "Level: 1 (no cost)"
+
+#### ASTRAL DEFENSES
+There is a missing new line before ASTRAL DEFENSES and the title should be changed from
+"Astral Defenses" to "ASTRAL DEFENSES (FORTE ABILITY)"
+
 ### 19-house-secrets.txt
 #### ALARM
 There should be a newline before ALARM, separating it from ADVANCED HOUSE

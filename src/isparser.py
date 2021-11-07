@@ -122,7 +122,8 @@ def parse_any(filename):
         'Objects of Power': {},
         'Monographs': {},
         'Character Secrets': {},
-        'House Secrets': {}
+        'House Secrets': {},
+        'Forte': {}
     }
 
     filetype = None
@@ -170,6 +171,11 @@ def parse_any(filename):
                     'Title': title,
                     'Type': entrytype
                 }
+
+                # Rarely, an unlabeled comment will immediately follow the title
+                section = 'Comment'
+                data[filetype][title][section] = ''
+
             continue
 
         # Objects of Power have special tags applied to certain items.
@@ -188,10 +194,10 @@ def parse_any(filename):
             section = new_section
             data[filetype][title][section] = content
 
-            # Incantations or Spells: Level.
-            # Levels are always single line and are always followed by an effect which
-            # does not have a section label
-            if filetype in ('Spells', 'Incantations', 'Character Secrets', 'House Secrets') and section == 'Level':
+            # All filetypes: Level.
+            # Levels are always single line and are sometimes followed by an effect which
+            # does not have a section label.
+            if section == 'Level':
                 section = 'Effect'
                 data[filetype][title][section] = ''
 
@@ -200,7 +206,8 @@ def parse_any(filename):
             # does not have a section label
             elif section == 'Color':
                 section = 'Comment'
-                data[filetype][title][section] = ''
+                if not data[filetype][title][section]:
+                    data[filetype][title][section] = ''
 
             continue
 
@@ -264,6 +271,8 @@ def check_for_filetype(line):
         return 'Character Secrets'
     elif line == 'HOUSE SECRETS':
         return 'House Secrets'
+    elif line == 'FORTE':
+        return 'Forte'
     return None
 
 
@@ -275,7 +284,7 @@ def check_for_title(line):
     """
 
     re_title = re.compile(
-        '^(?P<title>.+) \\((?P<type>EPHEMERA OBJECT|SPELL|INCANTATION|OBJECT OF POWER|CONJURATION|INVOCATION|ENCHANTMENT|RITUAL|CHARACTER SECRETS|HOUSE SECRETS)\\)$')
+        '^(?P<title>.+) \\((?P<type>EPHEMERA OBJECT|SPELL|INCANTATION|OBJECT OF POWER|CONJURATION|INVOCATION|ENCHANTMENT|RITUAL|CHARACTER SECRETS|HOUSE SECRETS|FORTE ABILITY)\\)$')
     m = re_title.match(line)
     if m:
         return m.group('title'), m.group('type')

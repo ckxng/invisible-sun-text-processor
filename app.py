@@ -13,6 +13,7 @@ files = [
     'textreference/05-objects-of-power.txt',
     'textreference/06-spells.txt',
     'textreference/07-epherma.txt',
+    'textreference/10-forte.txt',
     'textreference/18-character-secrets.txt',
     'textreference/19-house-secrets.txt'
 ]
