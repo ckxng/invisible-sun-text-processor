@@ -136,7 +136,7 @@ def parse_any(filename):
     saved_line = None
     previous_line = None
 
-    for line in open(filename, "r").readlines():
+    for line in open(filename, "r", encoding="windows-1252").readlines():
         line = line.rstrip()
 
         # store the current line so that it can be moved into previous_line next time
